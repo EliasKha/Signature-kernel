@@ -1,0 +1,23 @@
+# pyproject.toml  ── project_root/pyproject.toml
+[build-system]
+requires      = ["setuptools>=68", "wheel"]   # 'wheel' lets pip build a wheel
+build-backend = "setuptools.build_meta"
+
+[project]
+name            = "logsig_rl"                 # pick any name; must be unique on PyPI
+version         = "0.0.1"
+description     = "Log-Signature RL baselines and MPC controller"
+authors         = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = "<=3.8"
+dependencies    = [
+    "gymnasium>=0.29",
+    "torch>=2.2",
+    "iisignature>=0.24",
+    "yfinance>=0.2",
+    "matplotlib",
+    "numpy",
+    "pandas",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]              # tell setuptools to look inside the src/ container
