@@ -20,30 +20,30 @@ MPC_HORIZON    = 10
 MPC_CANDIDATES = 1024
 MPC_REG_LAMBDA = 1e-4
 
-BENCHMARK = ["^DJI"]
-
-ASSETS = [
-    "NVDA","MSFT","AAPL","AMZN","JPM","WMT","V","PG","JNJ","HD",
-    "KO","UNH","CSCO","IBM","CRM","CVX","DIS","AXP","MCD","GS",
-    "MRK","CAT","VZ","BA","AMGN","HON","NKE","SHW","MMM","TRV"
-]
-
+# BENCHMARK = ["^DJI"]
 
 # ASSETS = [
-#     "AAPL", "ABBV", "ABT", "ACN", "ADBE", "AIG", "AMD", "AMGN", "AMT", "AMZN",
-#     "AVGO", "AXP", "BA", "BAC", "BIIB", "BK", "BKNG", "BLK", "BMY", "C",
-#     "CAT", "CHTR", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CSCO", "CVS",
-#     "CVX", "DHR", "DIS", "DOW", "DUK", "EMR", "EXC", "F", "FDX", "GD",
-#     "GE", "GILD", "GM", "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "INTC",
-#     "INTU", "ISRG", "JNJ", "JPM", "KHC", "KMI", "KO", "LIN", "LLY", "LMT",
-#     "LOW", "MA", "MCD", "MDLZ", "MDT", "MET", "META", "MMM", "MO", "MRK",
-#     "MS", "MSFT", "NEE", "NFLX", "NKE", "NOW", "NVDA", "ORCL", "PEP", "PFE",
-#     "PM", "PYPL", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT",
-#     "TMO", "TMUS", "TSLA", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VZ",
-#     "WBA", "WFC", "WMT", "XOM"
+#     "NVDA","MSFT","AAPL","AMZN","JPM","WMT","V","PG","JNJ","HD",
+#     "KO","UNH","CSCO","IBM","CRM","CVX","DIS","AXP","MCD","GS",
+#     "MRK","CAT","VZ","BA","AMGN","HON","NKE","SHW","MMM","TRV"
 # ]
 
-# BENCHMARK = ["^OEX"]
+
+ASSETS = [
+    "AAPL", "ABBV", "ABT", "ACN", "ADBE", "AIG", "AMD", "AMGN", "AMT", "AMZN",
+    "AVGO", "AXP", "BA", "BAC", "BIIB", "BK", "BKNG", "BLK", "BMY", "C",
+    "CAT", "CHTR", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CSCO", "CVS",
+    "CVX", "DHR", "DIS", "DOW", "DUK", "EMR", "EXC", "F", "FDX", "GD",
+    "GE", "GILD", "GM", "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "INTC",
+    "INTU", "ISRG", "JNJ", "JPM", "KHC", "KMI", "KO", "LIN", "LLY", "LMT",
+    "LOW", "MA", "MCD", "MDLZ", "MDT", "MET", "META", "MMM", "MO", "MRK",
+    "MS", "MSFT", "NEE", "NFLX", "NKE", "NOW", "NVDA", "ORCL", "PEP", "PFE",
+    "PM", "PYPL", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT",
+    "TMO", "TMUS", "TSLA", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VZ",
+    "WBA", "WFC", "WMT", "XOM"
+]
+
+BENCHMARK = ["^OEX"]
 
 
 YEARS = 5
