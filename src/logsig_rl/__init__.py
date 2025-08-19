@@ -6,7 +6,6 @@ Expose the public API so users can just do:
     from logsig_rl import SignatureAgent, SignatureMPCAgent, SigPrefixEnv
 """
 from .agents.rl import GenericRLAgent
-from .agents.mpc import SignatureMPCAgent
 from .envs.sig_prefix_env import SigPrefixEnv
 
 __all__ = [

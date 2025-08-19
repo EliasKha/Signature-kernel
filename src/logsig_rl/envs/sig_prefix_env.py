@@ -9,7 +9,6 @@ import gymnasium as gym
 from gymnasium import spaces
 import torch
 
-from ..models import LogSigLayer
 from ..signature import sharpe  # may be handy for debugging
 from .. import config
 
@@ -24,11 +23,6 @@ class SigPrefixEnv(gym.Env):
         self.ptr = 1
 
         self.lam = lam
-        self._logsig = LogSigLayer(self.N, depth).eval()
-
-        with torch.no_grad():
-            dummy = torch.zeros(1, 1, self.N)
-            self.obs_dim = self._logsig(dummy).shape[-1]
 
         self.observation_space = spaces.Box(-np.inf, np.inf, (self.obs_dim,), np.float32)
         self.action_space = spaces.Box(0, 1, (self.N,), np.float32)
@@ -54,8 +48,3 @@ class SigPrefixEnv(gym.Env):
 
         return obs, mean_term, done, False, {}
 
-    def _obs(self) -> np.ndarray:
-        with torch.no_grad():
-            path = torch.from_numpy(self.ret[: self.ptr]).unsqueeze(0)
-            logsig = self._logsig(path).squeeze(0).cpu().numpy().astype(np.float32)
-        return logsig

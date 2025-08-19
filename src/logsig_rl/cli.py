@@ -7,8 +7,6 @@ import datetime as dt
 import json
 import logging
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -258,8 +256,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--train", nargs="+",
                         choices=base + [f"sk_{a}" for a in base] + [f"sf_{a}" for a in base],
                         default=["sac"])
-    parser.add_argument("--years",  type=int,   default=config.YEARS)
-    parser.add_argument("--split",  type=float, default=config.SPLIT,
+    parser.add_argument("--years",  type=int)
+    parser.add_argument("--split",  type=float,
                         help="fraction of samples used for *training*")
     parser.add_argument("--val-split", type=float, default=getattr(config, "VAL_SPLIT", 0.20),
                         help="additional fraction (after train) for *validation*")
@@ -270,8 +268,6 @@ def main(argv: list[str] | None = None) -> None:
                         help="skip Optuna and use library defaults")
     parser.add_argument("--steps", type=int, default=10_000,
                         help="environment steps per training run")
-    parser.add_argument("--max-procs", type=int, default=min(8, cpu_count()),
-                        help="limit parallel workers")
     args = parser.parse_args(argv)
 
     if args.no_optimize:
@@ -305,13 +301,10 @@ def main(argv: list[str] | None = None) -> None:
         for lam in lam_vals for algo in args.train
     ]
 
-    n_procs = min(args.max_procs, max(1, len(jobs)))
-    print(f"🚀 Dispatching {len(jobs)} jobs on {n_procs} cores …")
-
-    with ProcessPoolExecutor(max_workers=n_procs) as pool, \
-         tqdm(total=len(jobs), desc="jobs") as bar:
-        for fut in as_completed(pool.submit(_train_one_job, *j) for j in jobs):
-            fut.result()
+    print(f"🚀 Running {len(jobs)} jobs sequentially …")
+    with tqdm(total=len(jobs), desc="jobs") as bar:
+        for j in jobs:
+            _train_one_job(*j)
             bar.update(1)
 
 if __name__ == "__main__":
