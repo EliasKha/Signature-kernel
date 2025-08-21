@@ -15,8 +15,6 @@ This agent is concrete (not abstract) and implements the base Agent API:
 - train(env, total_timesteps, callback)
 - evaluate(env, render=False) -> np.ndarray (reward path)
 - fit(...) as an alias to train
-
-It prints minimal, helpful diagnostics and avoids tqdm bars (verbose=0).
 """
 from __future__ import annotations
 
@@ -301,10 +299,6 @@ class UnifiedAgent(Agent):
         self.model: Optional[BaseAlgorithm] = None
         self._prototypes: Optional[np.ndarray] = None  # shape (m, T, d)
 
-        print(
-            f"[UnifiedAgent] family={self.family} algo={self.algo_name} "
-            f"(lam={self.lam} ignored for RL)"
-        )
 
     # ------------------------------------------------------------------ public API
     def train(
@@ -316,10 +310,6 @@ class UnifiedAgent(Agent):
     ) -> None:
         """Train silently for *total_timesteps* interactions."""
         wrapped = self._maybe_wrap_env(env, phase="train")
-        print(f"[UnifiedAgent] Starting learn: total_timesteps={total_timesteps} verbose=0")
-        self.model = self.algorithm_cls(
-            "MlpPolicy", wrapped, verbose=0, **self.algo_kwargs
-        )
         self.model.learn(total_timesteps=total_timesteps, callback=callback)
 
     # alias used by your runner
@@ -348,14 +338,11 @@ class UnifiedAgent(Agent):
     def _maybe_wrap_env(self, env: gym.Env, *, phase: str) -> gym.Env:
         """Build prototypes (if needed) and wrap env according to family."""
         if self.family == "rl":
-            print(f"[UnifiedAgent] ({phase}) vanilla RL: no embedding wrapper")
             return env
 
         # ensure prototypes exist
         if self._prototypes is None:
             self._prototypes = self._make_prototypes(env)
-            print(f"[UnifiedAgent] Built {self._prototypes.shape[0]} prototypes of shape "
-                  f"{self._prototypes.shape[1:]} for {self.family.upper()}")
 
         prototypes = [p for p in self._prototypes]  # Sequence[np.ndarray]
 
@@ -407,5 +394,4 @@ class UnifiedAgent(Agent):
         protos = np.zeros((m, T, d), dtype=np.float32)
         # tiny jitter to avoid degenerate Gram (still deterministic-ish)
         protos += 1e-4 * self.rng.normal(size=protos.shape).astype(np.float32)
-        print("[UnifiedAgent][WARN] env.ret not found; using zero-jitter prototypes.")
         return protos

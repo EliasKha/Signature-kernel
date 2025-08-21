@@ -54,7 +54,6 @@ def _rollout_series(agent: UnifiedAgent, env) -> Tuple[List[float], List[float],
         if terminated or truncated:
             break
     score = float(np.mean(agent_returns)) if agent_returns else 0.0
-    print(f"[Eval] steps={steps} mean_agent_return={score:.6g}")
     return agent_returns, bench_returns, score
 
 
@@ -76,28 +75,12 @@ def run_experiments(
       results/<family>/<algo>/<TICKER>/lam_xxxxx.csv             # BEST series (agent + benchmark)
       results/<family>/<algo>/<TICKER>/lam_xxxxx_hparams.json    # list of trials (JSON) as per user's format
     """
-    print("==========================================================")
-    print("[Config] run_experiments")
-    print(f"  algo_names = {algo_names}")
-    print(f"  years      = {years}")
-    print(f"  lam_values = {lam_values}")
-    print(f"  trials     = {trials}")
-    print(f"  split      = {split}")
-    print(f"  val_split  = {val_split}")
-    print(f"  env_name   = {env_name}")
-    print(f"  ticker     = {ticker}")
-    print(f"  steps      = {steps}")
-    print(f"  tcost      = {tcost}")
-    print(f"  skip_existing = {skip_existing}")
-    print("==========================================================")
 
     with tqdm(total=len(algo_names) * len(lam_values) * trials, desc="Experiments", unit="job") as pbar:
         for name in algo_names:
             family, algo = parse_agent_name(name)
-            print(f"\n[Loop] === Algo '{name}' -> family='{family}', algo='{algo}' ===")
 
             for lam in lam_values:
-                print(f"[Loop] ---- λ={lam:.4f} ----")
                 writer = ResultsDirWriter(
                     base_dir="results",
                     family=family,
@@ -109,7 +92,6 @@ def run_experiments(
                 for trial in range(trials):
                     if skip_existing and writer.trial_exists(trial):
                         msg = f"[Skip] {family}/{algo}/{ticker} λ={lam:.4f} trial={trial}"
-                        print(msg)
                         pbar.update(1)
                         pbar.set_postfix_str(msg)
                         
@@ -117,10 +99,8 @@ def run_experiments(
 
                     try:
                         seed = 10_000 + 97 * trial
-                        print(f"[Run] λ={lam:.4f} trial={trial} seed={seed}")
                         seed_everything(seed)
 
-                        print("[Env] Building train/val/test splits…")
                         env_train, env_val, env_test = make_env_splits(
                             env_name=env_name,
                             ticker=ticker,
@@ -132,25 +112,19 @@ def run_experiments(
                             tcost=tcost,
                         )
 
-                        print(f"[Fit] UnifiedAgent(family='{family}', algo='{algo}', lam={lam:.4f}) steps={steps}")
                         agent = UnifiedAgent(family=family, algo=algo, lam=lam)
                         agent.fit(env_train, steps=steps)
-                        print("[Fit] done.")
 
-                        print("[Eval] Validation rollout…")
                         env_val_wrapped = agent._maybe_wrap_env(env_val, phase="val")
                         val_agent, _val_bench, val_score = _rollout_series(agent, env_val_wrapped)
 
-                        print("[Eval] Test rollout (candidate for best)…")
                         env_test_wrapped = agent._maybe_wrap_env(env_test, phase="test")
                         test_agent, test_bench, test_score = _rollout_series(agent, env_test_wrapped)
                         try:
                             params = _extract_params(agent.model)  # type: ignore[attr-defined]
                         except Exception:
                             params = {}
-                        print(f"[Params] keys={list(params.keys())}")
 
-                        print("[Write] Appending JSON trial & refreshing BEST CSV if needed…")
                         writer.append_trial(
                             trial=trial,
                             score=val_score,
@@ -159,10 +133,8 @@ def run_experiments(
                             test_returns=test_agent,
                             test_benchmark_returns=test_bench,  # only used if THIS trial is best
                         )
-                        print("[Write] Done.")
 
                         msg = f"[OK] {family}/{algo}/{ticker} λ={lam:.4f} trial={trial} score={val_score:.6g}"
-                        print(msg)
                         pbar.set_postfix_str(msg)
                     except Exception:
                         print(f"[ERROR] Failure at {family}/{algo}/{ticker} λ={lam:.4f} trial={trial}")

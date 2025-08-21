@@ -132,21 +132,17 @@ class ResultsDirWriter:
         self.series_path = self.dir / f"{lam_tag}.csv"
         self.json_path = self.dir / f"{lam_tag}_hparams.json"
 
-        print(f"[ResultWriter] Dir:     {self.dir.resolve()}")
-        print(f"[ResultWriter] JSON:    {self.json_path.name}  (trials live here)")
-        print(f"[ResultWriter] Series:  {self.series_path.name}  (best trial only)")
+
 
     # ---------- JSON trials helpers ----------
 
     def _load_trials(self) -> List[Dict[str, Any]]:
         if not self.json_path.exists():
-            print(f"[ResultWriter] No JSON yet -> {self.json_path.name} (will create on first append)")
             return []
         try:
             with self.json_path.open("r", encoding="utf-8") as fh:
                 trials = json.load(fh)
             if not isinstance(trials, list):
-                print(f"[ResultWriter][WARN] JSON not a list; resetting to empty. Type={type(trials)}")
                 return []
             # sanity pass
             cleaned: List[Dict[str, Any]] = []
@@ -160,7 +156,6 @@ class ResultsDirWriter:
                     cleaned.append({"trial": t, "score": s, "params": p, "val_returns": v, "test_returns": u})
                 except Exception as e:
                     print(f"[ResultWriter][WARN] Skipping malformed JSON trial row: {r} -> {e}")
-            print(f"[ResultWriter] Loaded {len(cleaned)} trials from {self.json_path.name}: {[r['trial'] for r in cleaned]}")
             return cleaned
         except Exception as e:
             print(f"[ResultWriter][ERROR] Could not read {self.json_path.name}: {e}")
@@ -174,24 +169,20 @@ class ResultsDirWriter:
 
     def completed_trials(self) -> Sequence[int]:
         ids = [r["trial"] for r in self._load_trials()]
-        print(f"[ResultWriter] completed_trials -> {ids}")
         return ids
 
     def trial_exists(self, trial: int) -> bool:
         exists = int(trial) in set(self.completed_trials())
-        print(f"[ResultWriter] trial_exists({trial}) -> {exists}")
         return exists
 
     def _best_from(self, trials: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         if not trials:
-            print("[ResultWriter] _best_from: no trials")
             return None
         # Best = max score; tie-breaker = smaller trial id
         best = None
         for r in trials:
             if best is None or (r["score"] > best["score"]) or (r["score"] == best["score"] and r["trial"] < best["trial"]):
                 best = r
-        print(f"[ResultWriter] Best trial so far -> trial={best['trial']} score={best['score']:.6g}")
         return best
 
     def _write_best_series(
@@ -204,13 +195,11 @@ class ResultsDirWriter:
             w = csv.writer(f)
             if benchmark_returns is not None:
                 n = min(len(agent_returns), len(benchmark_returns))
-                print(f"[ResultWriter] Writing BEST series with benchmark (n={n}) -> {self.series_path.name}")
                 w.writerow([col_agent, "benchmark_return"])
                 for i in range(n):
                     w.writerow([float(agent_returns[i]), float(benchmark_returns[i])])
             else:
                 n = len(agent_returns)
-                print(f"[ResultWriter][WARN] No benchmark series available; writing single-column CSV (n={n})")
                 w.writerow([col_agent])
                 for i in range(n):
                     w.writerow([float(agent_returns[i])])
@@ -234,7 +223,7 @@ class ResultsDirWriter:
         trials = self._load_trials()
 
         if any(r["trial"] == int(trial) for r in trials):
-            print(f"[ResultWriter] Trial {trial} already present in JSON. Skipping append.")
+            return
         else:
             record = {
                 "trial": int(trial),
@@ -249,7 +238,4 @@ class ResultsDirWriter:
         # Recompute best and update series if THIS trial is now best
         best = self._best_from(trials)
         if best and best["trial"] == int(trial):
-            print(f"[ResultWriter] Current trial {trial} is BEST -> refreshing {self.series_path.name}")
             self._write_best_series(agent_returns=test_returns, benchmark_returns=test_benchmark_returns)
-        else:
-            print(f"[ResultWriter] Trial {trial} is NOT best; leaving {self.series_path.name} unchanged.")
